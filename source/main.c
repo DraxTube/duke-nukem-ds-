@@ -269,7 +269,7 @@ int main(void)
         /* Try loading palette */
         if (nds_fileExists("palette.dat")) {
             nds_consolePrint("Loading palette...\n");
-            /* Palette loading handled in engine */
+            engine_loadpalette("palette.dat");
             hasData = 1;
         }
 
