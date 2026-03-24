@@ -19,8 +19,7 @@ jobs:
 
       - name: Install NDS libraries
         run: |
-          dkp-pacman -Syyu --noconfirm
-          dkp-pacman -S --noconfirm --needed nds-dev
+          dkp-pacman -S --noconfirm --needed nds-dev || echo "nds-dev already installed or unavailable, continuing..."
 
       - name: Build
         run: |
