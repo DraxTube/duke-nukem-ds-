@@ -108,7 +108,18 @@ void     engine_updatesector(int32_t x, int32_t y, int16_t *sectnum);
 extern int32_t     sintable[2048];
 void     engine_inittables(void);
 
+static inline int32_t engine_sin(int16_t a)
+{
+    return sintable[a & 2047];
+}
+
+static inline int32_t engine_cos(int16_t a)
+{
+    return sintable[(a + 512) & 2047];
+}
+
 /* ---- Tile/Art loading ---- */
 int32_t  engine_loadpics(const char *filename);
+int32_t  engine_loadpalette(const char *filename);
 
 #endif /* BUILD_ENGINE_H */
