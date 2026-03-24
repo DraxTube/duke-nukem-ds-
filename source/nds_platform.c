@@ -4,7 +4,6 @@
  */
 
 #include <nds.h>
-#include <fat.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -215,7 +214,9 @@ void nds_stopMusic(void)
 /* ---- File I/O ---- */
 int32_t nds_initFilesystem(void)
 {
-    return fatInitDefault();
+    /* FAT filesystem not available in base devkitARM image.
+       Files can be loaded via NitroFS or DLDI-patched later. */
+    return 0;
 }
 
 int32_t nds_fileExists(const char *filename)
