@@ -1,0 +1,37 @@
+name: Build Duke Nukem 3D NDS
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install NDS libraries
+        run: |
+          dkp-pacman -Syyu --noconfirm
+          dkp-pacman -S --noconfirm --needed nds-dev
+
+      - name: Build
+        run: |
+          export DEVKITPRO=/opt/devkitpro
+          export DEVKITARM=$DEVKITPRO/devkitARM
+          export PATH=$DEVKITARM/bin:$DEVKITPRO/tools/bin:$PATH
+          make -j$(nproc)
+
+      - name: Upload NDS ROM
+        uses: actions/upload-artifact@v4
+        with:
+          name: duke3d-nds
+          path: "*.nds"
+          if-no-files-found: error
