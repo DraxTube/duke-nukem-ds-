@@ -57,15 +57,6 @@ void engine_inittables(void)
     }
 }
 
-static inline int32_t engine_sin(int16_t a)
-{
-    return sintable[a & 2047];
-}
-
-static inline int32_t engine_cos(int16_t a)
-{
-    return sintable[(a + 512) & 2047];
-}
 
 /* ---- Random Number Generator ---- */
 int32_t engine_krand(void)
@@ -252,7 +243,7 @@ int32_t engine_loadpics(const char *filename)
 }
 
 /* ---- Palette Loading ---- */
-static int32_t engine_loadpalette(const char *filename)
+int32_t engine_loadpalette(const char *filename)
 {
     FILE *f;
     int32_t i;
