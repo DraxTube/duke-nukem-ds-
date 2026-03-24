@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include "build_engine.h"
 #include "nds_platform.h"
 
@@ -49,11 +48,56 @@ static int16_t sectorRenderList[MAXSECTORSTORENDER];
 static int32_t numSectorsToRender;
 
 /* ---- Trig Table Init ---- */
+/* Integer sine approximation: no libm needed */
+static int32_t isin(int32_t x)
+{
+    /* x in range 0..2047 (Build angle units, 2048 = 360 deg)
+       Returns sine * 16384 (14-bit fixed point)
+       Uses a parabolic approximation */
+    int32_t quarter = 512; /* 2048/4 */
+    int32_t half = 1024;
+    int32_t val;
+
+    x = x & 2047;
+
+    /* Map to 0..511 range with sign */
+    if (x < quarter) {
+        /* 0..90 deg: rising */
+        val = x;
+    } else if (x < half) {
+        /* 90..180 deg: falling */
+        val = half - x;
+    } else if (x < half + quarter) {
+        /* 180..270 deg: falling negative */
+        val = -(x - half);
+    } else {
+        /* 270..360 deg: rising to zero */
+        val = -(2048 - x);
+    }
+
+    /* Parabolic approx: sin(x) ~= (4/pi)*x - (4/pi^2)*x^2 for 0..pi/2
+       Scaled: val is 0..512 representing 0..90 degrees
+       We want output in -16384..16384 */
+    {
+        /* Normalize val to -512..512 */
+        /* Result = val * (2*512 - abs(val)) * 16384 / (512*512/2) */
+        int32_t absval = val < 0 ? -val : val;
+        int64_t result = (int64_t)val * (int64_t)(1024 - absval);
+        /* Scale: at val=512, result = 512*512 = 262144, we want 16384 */
+        /* 16384 / 262144 = 1/16 */
+        result = (result + 8) >> 4;
+        /* Clamp */
+        if (result > 16384) result = 16384;
+        if (result < -16384) result = -16384;
+        return (int32_t)result;
+    }
+}
+
 void engine_inittables(void)
 {
     int32_t i;
     for (i = 0; i < 2048; i++) {
-        sintable[i] = (int32_t)(sin((double)i * 3.14159265358979 / 1024.0) * 16384.0);
+        sintable[i] = isin(i);
     }
 }
 
